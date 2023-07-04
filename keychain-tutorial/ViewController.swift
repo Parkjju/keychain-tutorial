@@ -10,34 +10,14 @@ import AuthenticationServices
 
 class ViewController: UIViewController {
     var ref: AnyObject?
+    let keychainManager = KeychainManager.shared
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        performExistingAccountSetupFlows()
+        
         setupProviderLoginView()
-        let query = [
-          kSecAttrServer: "pullipstyle1.com",
-          kSecAttrAccount: "andyibanez1",
-          kSecClass: kSecClassInternetPassword,
-          kSecReturnData: true,
-          kSecReturnAttributes: true,
-        ] as CFDictionary
-        
-        let deleteQuery = [
-            kSecAttrServer: "pullipstyle1.com",
-            kSecAttrAccount: "andyibanez1",
-            kSecClass: kSecClassInternetPassword
-        ] as CFDictionary
-        
-        let status = SecItemDelete(deleteQuery)
-        print("delete completed with status: \(status)")
-        
-        
-        
-        
-        
-        
-        
     }
     
     func setupProviderLoginView() {
@@ -64,7 +44,53 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: ASAuthorizationControllerDelegate{
+    func performExistingAccountSetupFlows() {
+        // Prepare requests for both Apple ID and password providers.
+        let requests = [ASAuthorizationAppleIDProvider().createRequest(),
+                        ASAuthorizationPasswordProvider().createRequest()]
+        
+        // Create an authorization controller with the given requests.
+        let authorizationController = ASAuthorizationController(authorizationRequests: requests)
+        authorizationController.delegate = self
+        authorizationController.presentationContextProvider = self
+        authorizationController.performRequests()
+    }
     
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            
+            // Create an account in your system.
+            let userIdentifier = appleIDCredential.user
+            let fullName = "rudwns3927@gmail.com"
+            
+            // For the purpose of this demo app, store the `userIdentifier` in the keychain.
+            do{
+                try keychainManager.saveItem(userIdentifier, itemClass: .password, key: fullName)
+            }catch{
+                print(error)
+            }
+            
+            
+            
+            // For the purpose of this demo app, show the Apple ID credential information in the `ResultViewController`.
+        case let passwordCredential as ASPasswordCredential:
+        
+            // Sign in using an existing iCloud Keychain credential.
+            let username = passwordCredential.user
+            let password = passwordCredential.password
+            print("PASSWORD..")
+            // For the purpose of this demo app, show the password credential as an alert.
+//            DispatchQueue.main.async {
+//                self.showPasswordCredentialAlert(username: username, password: password)
+//            }
+            
+            
+        default:
+            break
+        }
+    }
 }
 
 extension ViewController: ASAuthorizationControllerPresentationContextProviding{
