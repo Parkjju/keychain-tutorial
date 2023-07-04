@@ -21,6 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                ofClass: .password,
                key: "rudwns3927@gmail.com"
             )
+            // test
         }catch{
             print("ERROR: \(error)")
         }
