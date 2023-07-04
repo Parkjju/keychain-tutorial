@@ -7,84 +7,54 @@
 
 import Foundation
 
-enum KeychainError: Error{
-    case itemMissing
+class KeychainManager{
+    typealias ItemAttributes = [CFString: Any]
+    
+    static let shared = KeychainManager()
+    
+    private init(){}
 }
 
-public protocol KeychainManagerProtocol {
-    func save(key: String, data: Data) -> OSStatus
-    func load(key: String) -> Data?
-    func delete(key: String, data: Data) throws -> OSStatus
-    func delete(key: String) throws -> OSStatus
-    func update(key: String, data: Data)
-}
+extension KeychainManager{
+    enum ItemClass: RawRepresentable {
+         typealias RawValue = CFString
 
-class KeyChainManager: KeychainManagerProtocol {
-    
-    
-    /// The keychain instance
-    private let keychain: KeyChainProtocol
-    
-    
-    /// The initializer that introduces the keychain instance
-    ///
-    /// - Parameter keychain: Any keychain that conforms to the keychain protocol
-    init(_ keychain: KeyChainProtocol ) {
-        self.keychain = keychain
-    }
-    
-    func update(key: String, data: Data) {
-        let query: [String: Any] = [kSecClass as String       : kSecClassGenericPassword as String,
-                                    kSecAttrAccount as String : "MyString",
-        ]
-        
-        let attributes: [String: Any] = [kSecAttrAccount as String: "MyString",
-                                         kSecValueData as String: data]
+         case generic
+         case password
+         case certificate
+         case cryptography
+         case identity
 
-        _ = keychain.update(query, with: attributes)
-    }
-    
-    func delete(key: String) throws -> OSStatus {
-        if let data = load(key: key) {
-            let query = createSaveQuery(key: key, data: data )
-            return keychain.delete(query)
-        }
-        throw KeychainError.itemMissing
-    }
-    
-    func delete(key: String, data: Data) throws -> OSStatus {
-        let query = createSaveQuery(key: key, data: Data.init() )
-        return keychain.delete(query)
-    }
-    
-    func save(key: String, data: Data) -> OSStatus {
-        let query = createSaveQuery(key: key, data: data)
-        return keychain.add(query)
-    }
-    
-    func load(key: String) -> Data? {
-        let query = createSearchQuery(key: key)
-        return keychain.search(query)
-    }
-    
-    func createSaveQuery(key: String, data: Data) -> [String: Any] {
-        // Build the query to be used in Saving Data
-        let query = [
-            kSecClass as String       : kSecClassGenericPassword as String,
-            kSecAttrAccount as String : key,
-            kSecValueData as String   : data ]
-            as [String : Any]
-        return query
-    }
-    
-    func createSearchQuery(key: String) -> [String: Any] {
-        // Build the query to be used in Loading Data
-        let query = [
-            kSecClass as String       : kSecClassGenericPassword,
-            kSecAttrAccount as String : key,
-            kSecReturnData as String  : kCFBooleanTrue!,
-            kSecMatchLimit as String  : kSecMatchLimitOne ]
-            as [String : Any]
-        return query
-    }
+         init?(rawValue: CFString) {
+            switch rawValue {
+            case kSecClassGenericPassword:
+               self = .generic
+            case kSecClassInternetPassword:
+               self = .password
+            case kSecClassCertificate:
+               self = .certificate
+            case kSecClassKey:
+               self = .cryptography
+            case kSecClassIdentity:
+               self = .identity
+            default:
+               return nil
+            }
+         }
+
+         var rawValue: CFString {
+            switch self {
+            case .generic:
+               return kSecClassGenericPassword
+            case .password:
+               return kSecClassInternetPassword
+            case .certificate:
+               return kSecClassCertificate
+            case .cryptography:
+               return kSecClassKey
+            case .identity:
+               return kSecClassIdentity
+            }
+         }
+      }
 }
