@@ -18,9 +18,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var token: String = ""
         do{
             token = try KeychainManager.shared.retrieveItem(
-               ofClass: .password,
-               key: "rudwns3927@gmail.com"
+                ofClass: .identity,
+               key: "rudwns3927@naver.com"
             )
+            print(token)
             // test
         }catch{
             print("ERROR: \(error)")

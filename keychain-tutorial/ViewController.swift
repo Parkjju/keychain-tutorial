@@ -15,7 +15,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        performExistingAccountSetupFlows()
+//        performExistingAccountSetupFlows()
         
         setupProviderLoginView()
     }
@@ -62,8 +62,8 @@ extension ViewController: ASAuthorizationControllerDelegate{
         case let appleIDCredential as ASAuthorizationAppleIDCredential:
             
             // Create an account in your system.
-            let userIdentifier = appleIDCredential.user
-            let fullName = "rudwns3927@gmail.com"
+            let userIdentifier = appleIDCredential.identityToken
+            let fullName = "rudwns3927@naver.com"
             
             // For the purpose of this demo app, store the `userIdentifier` in the keychain.
             do{
@@ -75,18 +75,18 @@ extension ViewController: ASAuthorizationControllerDelegate{
             
             
             // For the purpose of this demo app, show the Apple ID credential information in the `ResultViewController`.
-        case let passwordCredential as ASPasswordCredential:
-        
-            // Sign in using an existing iCloud Keychain credential.
-            let username = passwordCredential.user
-            let password = passwordCredential.password
-            print("PASSWORD..")
-            // For the purpose of this demo app, show the password credential as an alert.
-//            DispatchQueue.main.async {
-//                self.showPasswordCredentialAlert(username: username, password: password)
-//            }
-            
-            
+//        case let passwordCredential as ASPasswordCredential:
+//        
+//            // Sign in using an existing iCloud Keychain credential.
+//            let username = passwordCredential.user
+//            let password = passwordCredential.password
+//            print("PASSWORD..")
+//            // For the purpose of this demo app, show the password credential as an alert.
+////            DispatchQueue.main.async {
+////                self.showPasswordCredentialAlert(username: username, password: password)
+////            }
+//            
+//            
         default:
             break
         }
